@@ -44,6 +44,9 @@
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim11;
 int pulsado = 0;
+int contador = 0;
+int times = 0;
+int cercanos = 0;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -98,6 +101,7 @@ int main(void)
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_TIM_Base_Start_IT(&htim11);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -113,13 +117,17 @@ int main(void)
       modo = 1;
       control = 1;
       counter_parpadeo = 0;
+      ultrasonidos();
       while (control == 1)
       {
         switch (modo)
         {
         case 1:
           counter_parpadeo = 0;
-          HAL_Delay(3000);
+          if (cercanos == 1)
+          {
+            HAL_Delay(3000);
+          }
           GPIOB->ODR &= ~GPIO_ODR_OD6_Msk; //Apagar verde coches
           GPIOC->ODR |= GPIO_ODR_OD7_Msk;  //Encender amarillo coches
           HAL_Delay(3000);
@@ -130,7 +138,7 @@ int main(void)
           GPIOA->ODR |= GPIO_ODR_OD9_Msk;  //Encender rojo coches
           GPIOA->ODR &= ~GPIO_ODR_OD7_Msk; //Apagamos rojo peatones
           GPIOA->ODR |= GPIO_ODR_OD6_Msk;  //Encender verde peatones
-          HAL_Delay(15000);
+          HAL_Delay(3000);
           modo = 3;
           break;
         case 3:
@@ -152,6 +160,8 @@ int main(void)
           modo = 1;
           control = 0;
           pulsado = 0;
+          cercanos = 0;
+          times = 0;
           break;
         }
       }
@@ -220,7 +230,7 @@ static void MX_TIM11_Init(void)
 
   /* USER CODE END TIM11_Init 1 */
   htim11.Instance = TIM11;
-  htim11.Init.Prescaler = 84;
+  htim11.Init.Prescaler = 83;
   htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim11.Init.Period = 9;
   htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -335,12 +345,94 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	__disable_irq();
-	if(GPIO_Pin == GPIO_PIN_10)
-	pulsado = 1;
-	__enable_irq();
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  __disable_irq();
+  if (GPIO_Pin == GPIO_PIN_10)
+    pulsado = 1;
+  __enable_irq();
 }
+
+void cambiarModoPin(int modo)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if (modo == 0) //Output
+  {
+    GPIO_InitStruct.Pin = GPIO_PIN_8;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  }
+  else if (modo == 1) //Input
+  {
+    GPIO_InitStruct.Pin = GPIO_PIN_8;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  }
+}
+
+int __io_putchar(int ch)
+{
+  uint8_t c[1];
+  c[0] = ch & 0x00FF;
+  HAL_UART_Transmit(&huart2, &*c, 1, 100);
+  return ch;
+}
+
+int _write(int file, char *ptr, int len)
+{
+  int DataIdx;
+  for (DataIdx = 0; DataIdx < len; DataIdx++)
+  {
+    __io_putchar(*ptr++);
+  }
+  return len;
+}
+
+int calcularDistanciaCm(int veces)
+{
+  int distancia = 0;
+  distancia = (veces * 10) / 29;
+  printf("D: %d cm.\n", distancia);
+  return distancia;
+}
+
+void ultrasonidos()
+{
+  int times2 = 0;
+  int times3 = 0;
+  int control = 0;
+  cambiarModoPin(0); //Modo output
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+  HAL_Delay(0.004);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+  times2 = times;
+  HAL_Delay(0.01);
+  cambiarModoPin(1); //Modo Input
+
+  times3 = times + 2500;
+  while (times<times3 && control == 0)
+  {
+    if ((GPIOA->IDR & GPIO_IDR_ID8_Msk) != 0x00)
+    {
+      if (calcularDistanciaCm(times - times2) < 40)
+      {
+        cercanos = 1;
+        control = 1;
+      }
+    }
+  }
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance == TIM11)
+  {
+    times++;
+  }
+}
+
 /* USER CODE END 4 */
 
 /**

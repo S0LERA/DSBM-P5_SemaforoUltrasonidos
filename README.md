@@ -4,3 +4,7 @@ Esta práctica es continuación de las P3 y P4 y su finalidad es detectar la pre
 ### Versión 0.5
  - Prescaler y Contador configurados.
  - Adaptado código de la práctica anterior.
+  
+### Versión 0.7
+ - Código sacado del callback.
+ - Sigue sin funcionalidad.

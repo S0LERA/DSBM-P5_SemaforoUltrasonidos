@@ -45,7 +45,7 @@
 TIM_HandleTypeDef htim11;
 int pulsado = 0;
 int contador = 0;
-int times = 0;
+int volatile times = 0;
 int cercanos = 0;
 UART_HandleTypeDef huart2;
 
@@ -138,7 +138,7 @@ int main(void)
           GPIOA->ODR |= GPIO_ODR_OD9_Msk;  //Encender rojo coches
           GPIOA->ODR &= ~GPIO_ODR_OD7_Msk; //Apagamos rojo peatones
           GPIOA->ODR |= GPIO_ODR_OD6_Msk;  //Encender verde peatones
-          HAL_Delay(3000);
+          HAL_Delay(15000);
           modo = 3;
           break;
         case 3:
@@ -393,7 +393,7 @@ int _write(int file, char *ptr, int len)
 int calcularDistanciaCm(int veces)
 {
   int distancia = 0;
-  distancia = (veces * 10) / 29;
+  distancia = (veces * 10) / 58;
   printf("D: %d cm.\n", distancia);
   return distancia;
 }
@@ -402,27 +402,29 @@ void ultrasonidos()
 {
   int times2 = 0;
   int times3 = 0;
-  int control = 0;
   cambiarModoPin(0); //Modo output
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-  HAL_Delay(0.004);
+  times = 0;
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-  times2 = times;
-  HAL_Delay(0.01);
+
+  while(times >= 1){
+
+  }
+
   cambiarModoPin(1); //Modo Input
 
-  times3 = times + 2500;
-  while (times<times3 && control == 0)
-  {
-    if ((GPIOA->IDR & GPIO_IDR_ID8_Msk) != 0x00)
-    {
-      if (calcularDistanciaCm(times - times2) < 40)
-      {
-        cercanos = 1;
-        control = 1;
-      }
-    }
+  while(!(GPIOA->IDR & GPIO_IDR_ID8_Msk)){
+
   }
+  times2 = times;
+  while((GPIOA->IDR & GPIO_IDR_ID8_Msk)) {
+
+  }
+  times3 = times;
+
+    if (calcularDistanciaCm(times3-times2) < 40) {
+        cercanos = 1;
+    }
+  
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)

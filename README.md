@@ -8,3 +8,6 @@ Esta práctica es continuación de las P3 y P4 y su finalidad es detectar la pre
 ### Versión 0.7
  - Código sacado del callback.
  - Sigue sin funcionalidad.
+
+### Versión 1.0
+ - Funcionalidad completada.

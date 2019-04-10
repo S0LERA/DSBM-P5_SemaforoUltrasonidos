@@ -17,3 +17,6 @@ Esta práctica es continuación de las P3 y P4 y su finalidad es detectar la pre
  
 ### Versión 2.0
  - Añadida documentación.
+ 
+### Versión 2.1
+ - Documentación reparada.

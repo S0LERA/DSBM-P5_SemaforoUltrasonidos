@@ -11,3 +11,6 @@ Esta práctica es continuación de las P3 y P4 y su finalidad es detectar la pre
 
 ### Versión 1.0
  - Funcionalidad completada.
+
+### Versión 1.5
+ - Práctica finalizada a falta de documentación.

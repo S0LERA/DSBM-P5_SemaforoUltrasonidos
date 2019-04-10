@@ -138,11 +138,11 @@ int main(void)
           GPIOA->ODR |= GPIO_ODR_OD9_Msk;  //Encender rojo coches
           GPIOA->ODR &= ~GPIO_ODR_OD7_Msk; //Apagamos rojo peatones
           GPIOA->ODR |= GPIO_ODR_OD6_Msk;  //Encender verde peatones
-          HAL_Delay(15000);
+          HAL_Delay(3000);
           modo = 3;
           break;
         case 3:
-          while (counter_parpadeo < 15)
+          while (counter_parpadeo < 3)
           {
             GPIOA->ODR &= ~GPIO_ODR_OD6_Msk; //Apagar verde peatones
             HAL_Delay(100);
